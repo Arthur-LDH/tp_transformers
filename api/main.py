@@ -15,6 +15,11 @@ generation_tokenizer = None
 text_classifier = None
 text_generator = None
 
+# Define paths to fine-tuned models
+FINE_TUNED_CLASSIFICATION_MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "deeplearning", "models", "sentiment_classifier_fine_tuned")
+FINE_TUNED_GENERATION_MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "deeplearning", "models", "text_generator_fine_tuned")
+
+
 app = FastAPI()
 
 # Define the path to the config directory
@@ -69,46 +74,77 @@ class GenerationIn(BaseModel):
 @app.on_event("startup")
 async def load_models():
     global classification_model, classification_tokenizer, generation_model, generation_tokenizer
-    global text_classifier, text_generator, classification_params_config # Added classification_params_config
+    global text_classifier, text_generator # Removed classification_params_config as it's loaded globally
 
-    # Load DistilBERT for sequence classification
-    cls_model_name = classification_params_config.get("model_name_or_path", "distilbert-base-uncased")
-    print(f"Loading classification model: {cls_model_name}")
-    try:
-        classification_tokenizer = AutoTokenizer.from_pretrained(cls_model_name)
-        classification_model = AutoModelForSequenceClassification.from_pretrained(cls_model_name)
-        text_classifier = pipeline(
-            "sentiment-analysis",
-            model=classification_model,
-            tokenizer=classification_tokenizer
-            # return_all_scores can be passed dynamically during inference
-        )
-        print(f"Successfully loaded {cls_model_name} and created classification pipeline.")
-    except Exception as e:
-        print(f"Error loading classification model {cls_model_name}: {e}")
+    # Load Fine-tuned DistilBERT for sequence classification
+    print(f"Loading fine-tuned classification model from: {FINE_TUNED_CLASSIFICATION_MODEL_PATH}")
+    if os.path.exists(FINE_TUNED_CLASSIFICATION_MODEL_PATH):
+        try:
+            classification_tokenizer = AutoTokenizer.from_pretrained(FINE_TUNED_CLASSIFICATION_MODEL_PATH)
+            classification_model = AutoModelForSequenceClassification.from_pretrained(FINE_TUNED_CLASSIFICATION_MODEL_PATH)
+            text_classifier = pipeline(
+                "sentiment-analysis",
+                model=classification_model,
+                tokenizer=classification_tokenizer
+            )
+            print(f"Successfully loaded fine-tuned classification model and created pipeline.")
+        except Exception as e:
+            print(f"Error loading fine-tuned classification model from {FINE_TUNED_CLASSIFICATION_MODEL_PATH}: {e}")
+            print("Falling back to default classification model specified in config or default.")
+            # Fallback logic (optional, or could raise error)
+            cls_model_name_fallback = classification_params_config.get("model_name_or_path", "distilbert-base-uncased")
+            try:
+                classification_tokenizer = AutoTokenizer.from_pretrained(cls_model_name_fallback)
+                classification_model = AutoModelForSequenceClassification.from_pretrained(cls_model_name_fallback)
+                text_classifier = pipeline("sentiment-analysis", model=classification_model, tokenizer=classification_tokenizer)
+                print(f"Successfully loaded fallback classification model: {cls_model_name_fallback}")
+            except Exception as fallback_e:
+                print(f"Error loading fallback classification model {cls_model_name_fallback}: {fallback_e}")
+    else:
+        print(f"Fine-tuned classification model not found at {FINE_TUNED_CLASSIFICATION_MODEL_PATH}. Check path.")
+        # Optionally, implement fallback to default model here as well or raise an error
 
-    # Load DistilGPT2 for text generation
-    gen_model_name = "distilgpt2"
-    print(f"Loading generation model: {gen_model_name}")
-    try:
-        generation_tokenizer = AutoTokenizer.from_pretrained(gen_model_name)
-        # Ensure pad_token_id is set for open-ended generation if not already present
-        if generation_tokenizer.pad_token_id is None:
-            generation_tokenizer.pad_token_id = generation_tokenizer.eos_token_id
-            print(f"Set pad_token_id to eos_token_id for {gen_model_name} tokenizer.")
+    # Load Fine-tuned DistilGPT2 for text generation
+    print(f"Loading fine-tuned generation model from: {FINE_TUNED_GENERATION_MODEL_PATH}")
+    if os.path.exists(FINE_TUNED_GENERATION_MODEL_PATH):
+        try:
+            generation_tokenizer = AutoTokenizer.from_pretrained(FINE_TUNED_GENERATION_MODEL_PATH)
+            # Ensure pad_token_id is set for open-ended generation if not already present
+            if generation_tokenizer.pad_token is None: # Check .pad_token instead of .pad_token_id for existence
+                generation_tokenizer.pad_token = generation_tokenizer.eos_token
+                print(f"Set pad_token to eos_token for fine-tuned {FINE_TUNED_GENERATION_MODEL_PATH} tokenizer.")
 
-        generation_model = AutoModelForCausalLM.from_pretrained(gen_model_name)
-        # Set the pad_token_id in the model config as well if using the model directly for generation
-        generation_model.config.pad_token_id = generation_model.config.eos_token_id # This is important for beam search
+            generation_model = AutoModelForCausalLM.from_pretrained(FINE_TUNED_GENERATION_MODEL_PATH)
+            # Set the pad_token_id in the model config as well if using the model directly for generation
+            if generation_model.config.pad_token_id is None:
+                 generation_model.config.pad_token_id = generation_tokenizer.eos_token_id
 
-        text_generator = pipeline(
-            "text-generation",
-            model=generation_model,
-            tokenizer=generation_tokenizer
-        )
-        print(f"Successfully loaded {gen_model_name} and created generation pipeline.")
-    except Exception as e:
-        print(f"Error loading generation model {gen_model_name}: {e}")
+
+            text_generator = pipeline(
+                "text-generation",
+                model=generation_model,
+                tokenizer=generation_tokenizer
+            )
+            print(f"Successfully loaded fine-tuned generation model and created pipeline.")
+        except Exception as e:
+            print(f"Error loading fine-tuned generation model from {FINE_TUNED_GENERATION_MODEL_PATH}: {e}")
+            print("Falling back to default generation model (distilgpt2).")
+            # Fallback logic
+            gen_model_name_fallback = "distilgpt2"
+            try:
+                generation_tokenizer = AutoTokenizer.from_pretrained(gen_model_name_fallback)
+                if generation_tokenizer.pad_token is None:
+                    generation_tokenizer.pad_token = generation_tokenizer.eos_token
+                generation_model = AutoModelForCausalLM.from_pretrained(gen_model_name_fallback)
+                if generation_model.config.pad_token_id is None:
+                    generation_model.config.pad_token_id = generation_tokenizer.eos_token_id
+                text_generator = pipeline("text-generation", model=generation_model, tokenizer=generation_tokenizer)
+                print(f"Successfully loaded fallback generation model: {gen_model_name_fallback}")
+            except Exception as fallback_e:
+                print(f"Error loading fallback generation model {gen_model_name_fallback}: {fallback_e}")
+    else:
+        print(f"Fine-tuned generation model not found at {FINE_TUNED_GENERATION_MODEL_PATH}. Check path.")
+        # Optionally, implement fallback to default model here as well or raise an error
 
 @app.post("/classify/")
 async def classify_text(item: ClassificationIn):
