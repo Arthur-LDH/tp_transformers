@@ -4,4 +4,6 @@ torch
 fastapi
 uvicorn[standard]
 gradio
-# Add other libraries as needed, e.g., datasets, scikit-learn, pandas, numpy
+scikit-learn # Added for metrics in fine-tuning
+datasets # Added for loading datasets in fine-tuning
+# Add other libraries as needed, e.g., pandas, numpy
