@@ -1,0 +1,6 @@
+# Common libraries for Transformers projects
+transformers
+torch
+fastapi
+uvicorn[standard]
+# Add other libraries as needed, e.g., datasets, scikit-learn, pandas, numpy
