@@ -67,6 +67,22 @@ python frontend/app.py
 
 L'interface Gradio sera généralement accessible via une URL locale affichée dans le terminal (souvent `http://127.0.0.1:7860` ou similaire). Assurez-vous que le backend FastAPI est en cours d'exécution pour que le frontend puisse communiquer avec les modèles.
 
+### 5. Fine-tuning des modèles
+
+Les scripts suivants permettent de fine-tuner les modèles de classification et de génération :
+
+*   **Classification de sentiment :**
+
+    ```bash
+    python deeplearning/scripts/fine_tune_classification.py
+    ```
+
+*   **Génération de texte (Causal LM) :**
+
+    ```bash
+    python deeplearning/scripts/fine_tune_generation.py
+    ```
+
 ## Réponses aux Questions du TP
 
 ### Partie 1 : Classification de sentiment
