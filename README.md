@@ -17,14 +17,14 @@ Voici les principales technologies et outils envisagés pour ce projet :
 *   **Deep Learning & Backend :**
     *   ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
     *   ![Hugging Face Transformers](https://img.shields.io/badge/🤗%20Transformers-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)
-    *   ![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white) (ou TensorFlow selon les préférences/modèles)
+    *   ![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white)
 *   **API :**
     *   ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white)
 *   **Frontend :**
     *   ![Vue.js](https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vue.js&logoColor=%234FC08D)
 *   **Gestion de version & Environnement :**
     *   ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
-    *   ![Visual Studio Code](https://img.shields.io/badge/VS%20Code-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white) ( предполагается)
+    *   ![Visual Studio Code](https://img.shields.io/badge/VS%20Code-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white)
 
 ## Recherche de Modèles sur Hugging Face Hub
 
