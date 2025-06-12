@@ -26,32 +26,109 @@ Voici les principales technologies et outils envisagés pour ce projet :
     *   ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
     *   ![Visual Studio Code](https://img.shields.io/badge/VS%20Code-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white)
 
-## Recherche de Modèles sur Hugging Face Hub
 
-Lors de la recherche de modèles de Transformers adaptés pour ce TP, plusieurs facteurs ont été pris en compte, notamment la performance, la taille du modèle, et la compatibilité avec du matériel courant (ex: une carte graphique RTX 3070 avec 8GB de VRAM).
+## Réponses aux Questions du TP
 
-### Modèles Envisagés
+### Partie 1 : Classification de sentiment
 
-*   **`distilbert-base-uncased`**:
-    *   **Description**: Il s'agit d'une version distillée de BERT (Bidirectional Encoder Representations from Transformers). La distillation est une technique qui permet de réduire la taille d'un modèle tout en essayant de conserver une grande partie de ses performances. `distilbert-base-uncased` est significativement plus petit et plus rapide que `bert-base-uncased`.
-    *   **Avantages**:
-        *   **Taille réduite**: Moins de paramètres, ce qui signifie moins d'utilisation de mémoire VRAM et un chargement plus rapide.
-        *   **Inférence rapide**: Convient bien pour des applications nécessitant des réponses rapides.
-        *   **Bonnes performances**: Bien qu'étant plus petit, il maintient des performances respectables sur de nombreuses tâches de compréhension du langage naturel (NLU).
-        *   **Compatibilité**: Fonctionne bien sur des GPU avec une VRAM modérée comme une RTX 3070 8GB.
-    *   **Cas d'usage typiques**: Classification de texte, analyse de sentiment, question-réponse (après fine-tuning).
-    *   **Remarques**: Le suffixe "uncased" signifie que le modèle ne fait pas de distinction entre les majuscules et les minuscules.
+#### 4.1 Questions
 
-### Considérations pour le choix d'un modèle sur une RTX 3070 (8GB VRAM)
+**1. Exploration du Hub et sélection de modèles :**
 
-*   **Taille du modèle (Nombre de paramètres)**: Les modèles plus grands (ex: BERT-large, GPT-2 medium/large) peuvent dépasser la capacité de 8GB de VRAM, surtout pendant l'entraînement ou si la taille du batch est importante. Les modèles "base" ou "distilled" sont généralement plus adaptés.
-*   **Quantification**: Certains modèles sont disponibles en versions quantifiées (ex: INT8). La quantification réduit la précision des poids du modèle (ex: de FP32 à INT8), ce qui diminue l'utilisation de la mémoire et peut accélérer l'inférence, parfois avec une légère perte de performance.
-*   **Précision (FP16 vs FP32)**: L'utilisation de la précision mixte (FP16) pendant l'entraînement ou l'inférence peut réduire de moitié l'utilisation de la VRAM par rapport à la pleine précision (FP32), tout en accélérant les calculs sur les GPU compatibles.
-*   **Taille du batch**: Lors de l'entraînement ou de l'inférence par batch, une taille de batch plus petite consomme moins de VRAM. Il faut trouver un équilibre entre la taille du batch et la stabilité/vitesse de l'entraînement.
-*   **Longueur de séquence**: Les Transformers ont une consommation mémoire qui augmente quadratiquement avec la longueur de la séquence d'entrée. Des séquences plus courtes nécessitent moins de mémoire.
+*   **Identification de 3 modèles différents adaptés à la classification de texte :**
+    1.  `distilbert-base-uncased`
+    2.  `bert-base-uncased`
+    3.  `camembert-base`
 
-### Conclusion Préliminaire
+*   **Analyse de leurs caractéristiques :**
+    *   **`distilbert-base-uncased`**:
+        *   **Taille**: Environ 66 millions de paramètres.
+        *   **Langue**: Anglais (non sensible à la casse - "uncased").
+        *   **Domaine d’entraînement**: Principalement BookCorpus et Wikipedia anglais.
+        *   **Architecture**: Encodeur seul (Transformer DistilBERT).
+    *   **`bert-base-uncased`**:
+        *   **Taille**: Environ 110 millions de paramètres.
+        *   **Langue**: Anglais (non sensible à la casse - "uncased").
+        *   **Domaine d’entraînement**: Principalement BookCorpus et Wikipedia anglais.
+        *   **Architecture**: Encodeur seul (Transformer BERT).
+    *   **`camembert-base`**:
+        *   **Taille**: Environ 110 millions de paramètres.
+        *   **Langue**: Français.
+        *   **Domaine d’entraînement**: Corpus français volumineux et varié (OSCAR).
+        *   **Architecture**: Encodeur seul (Transformer RoBERTa-like).
 
-Pour ce TP, commencer avec des modèles comme `distilbert-base-uncased` ou d'autres modèles BERT-like de taille "base" semble être une approche judicieuse. Ils offrent un bon compromis entre performance et ressources nécessaires. Il sera toujours possible d'explorer des modèles plus grands ou des techniques d'optimisation (quantification, pruning) si les besoins du projet évoluent et si les ressources le permettent.
+*   **Justification du choix de 2 modèles pour votre expérience :**
 
-Il est recommandé de consulter régulièrement le [Hugging Face Hub](https://huggingface.co/models) pour découvrir de nouveaux modèles ou des versions fine-tunées spécifiques à certaines tâches.
+    Pour cette expérience, nous choisirons **`distilbert-base-uncased`** et **`bert-base-uncased`**.
+    *   **Comparaison directe**: Les deux modèles sont entraînés sur des corpus anglais similaires (BookCorpus et Wikipedia anglais), ce qui permet une comparaison plus directe de leurs performances sur des tâches en anglais.
+    *   **Trade-off performance/ressources**: `distilbert-base-uncased` est une version distillée, plus petite et plus rapide de `bert-base-uncased`. Les comparer permettra d'analyser le compromis entre la taille/vitesse du modèle et ses performances. Ce critère est important étant donné la contrainte d'utilisation sur un PC classique avec une RTX 3070 8GB VRAM.
+    *   **Popularité et documentation**: Ce sont des modèles très populaires et largement documentés, facilitant leur utilisation, le fine-tuning, et la recherche de solutions en cas de problème.
+
+*   **Comparaison des architectures sous-jacentes (encoder-only vs encoder-decoder) :**
+
+    Les trois modèles identifiés (`distilbert-base-uncased`, `bert-base-uncased`, `camembert-base`) sont des modèles de type **encodeur seul (encoder-only)**.
+
+    *   **Architecture encodeur seul**:
+        *   Ces modèles sont constitués d'une pile d'encodeurs Transformer. Leur rôle est de lire l'intégralité de la séquence d'entrée et de générer une représentation contextuelle riche de chaque token dans la séquence.
+        *   Ils sont particulièrement bien adaptés aux tâches de compréhension du langage naturel (NLU) comme la classification de texte (notre cas ici), la reconnaissance d'entités nommées, ou l'extraction de réponses dans un contexte donné. Pour la classification, la représentation de sortie (souvent l'état caché du token spécial `[CLS]` ou une moyenne des états cachés des tokens de la séquence) est ensuite utilisée comme entrée pour une couche de classification simple.
+
+    *   **Différence avec les architectures encodeur-décodeur**:
+        *   Les modèles **encodeur-décodeur** (exemples : T5, BART, MarianMT pour la traduction) possèdent deux principales composantes : un encodeur qui traite la séquence d'entrée pour la transformer en une représentation continue, et un décodeur qui utilise cette représentation pour générer une séquence de sortie token par token.
+        *   Ils sont nativement conçus pour les tâches de séquence à séquence (seq2seq) telles que la traduction automatique, le résumé de texte, ou la génération de texte conditionnelle.
+        *   Bien qu'un modèle encodeur-décodeur puisse être adapté pour la classification (par exemple, en lui faisant générer le nom de la classe sous forme de texte : "positif", "négatif"), les modèles encodeur seul sont généralement plus directs, plus légers en termes de paramètres pour une tâche équivalente, et souvent plus performants pour les tâches de classification pure.
+
+    *   **Pertinence pour la classification de texte**: Pour la classification de sentiment, l'objectif est de comprendre le sens global d'un texte pour lui assigner une étiquette. Une architecture encodeur seul est donc tout à fait appropriée et constitue le choix standard et le plus efficace pour cette tâche.
+
+
+### Partie 2 : Génération de texte et question-réponse
+
+#### 5.1 Questions
+
+**(a) Sélection et comparaison de modèles génératifs :**
+
+*   **Identification de 2 modèles adaptés à la génération de texte sur le Hub :**
+
+    Pour la génération de texte, nous allons considérer les modèles suivants :
+    1.  **`gpt2`** (ou sa version distillée `distilgpt2` pour une empreinte plus faible) : Un modèle auto-régressif basé sur l'architecture Transformer de type décodeur seul.
+    2.  **`t5-small`** : Un modèle séquence à séquence (encodeur-décodeur) qui peut être utilisé pour la génération de texte conditionnelle.
+
+*   **Comparaison de leurs approches : autoregressive vs seq2seq :**
+
+    *   **Modèles Auto-régressifs (Decoder-Only, ex: GPT-2)**:
+        *   **Principe**: Ces modèles génèrent du texte un token à la fois. Chaque nouveau token est prédit en se basant sur la séquence des tokens précédemment générés. Ils lisent la séquence de gauche à droite (pour les langues occidentales) et prédisent le token suivant.
+        *   **Architecture**: Ils utilisent typiquement uniquement la partie décodeur d'une architecture Transformer. Le mécanisme d'attention leur permet de prendre en compte l'ensemble du contexte précédent lors de la génération de chaque nouveau token.
+        *   **Cas d'usage**: Très efficaces pour la génération de texte libre (non conditionnée ou conditionnée par un prompt initial), la complétion de texte, l'écriture créative.
+        *   **Exemple**: `gpt2` est un exemple canonique. Si on lui donne le prompt "Once upon a time, in a land far away,", il va prédire le token suivant, puis le suivant, en se basant à chaque fois sur tout ce qui a été généré jusqu'alors.
+
+    *   **Modèles Séquence à Séquence (Encoder-Decoder, ex: T5-small)**:
+        *   **Principe**: Ces modèles sont conçus pour transformer une séquence d'entrée en une séquence de sortie. L'encodeur traite la séquence d'entrée complète pour en créer une représentation (un état caché). Le décodeur utilise ensuite cette représentation pour générer la séquence de sortie, token par token, de manière auto-régressive (similaire à un modèle décodeur seul, mais conditionné par la sortie de l'encodeur).
+        *   **Architecture**: Ils utilisent à la fois un encodeur et un décodeur.
+        *   **Cas d'usage**: Idéaux pour les tâches où la sortie est une transformation de l'entrée, comme la traduction automatique (entrée : phrase en langue A, sortie : phrase en langue B), le résumé de texte (entrée : texte long, sortie : résumé court), la réponse à des questions (entrée : question + contexte, sortie : réponse). Pour la génération de texte plus "libre", on peut les utiliser en donnant un prompt à l'encodeur et en laissant le décodeur générer la suite.
+        *   **Exemple**: `t5-small` est pré-entraîné sur une multitude de tâches en utilisant des préfixes spécifiques pour indiquer la tâche à effectuer (ex: "translate English to French: ...", "summarize: ..."). Pour la génération de texte à partir d'un prompt, on peut simplement donner le prompt comme entrée.
+
+*   **Test des capacités de génération avec différents prompts (Exemples conceptuels) :**
+
+    *   **Prompt 1 (Créatif)**: "Le dragon ouvrit un œil et dit à la princesse :"
+        *   **`gpt2` (attendu)**: Pourrait générer une suite narrative, par exemple : "... 'Votre quête est noble, mais le chemin est semé d'embûches. Cherchez l'oracle de la montagne interdite.'"
+        *   **`t5-small` (attendu, si utilisé pour la complétion)**: Pourrait générer quelque chose de similaire, peut-être plus concis ou factuel selon son entraînement, par exemple : "... 'Bonjour.'"
+
+    *   **Prompt 2 (Factuel/Question simple)**: "La capitale de la France est"
+        *   **`gpt2` (attendu)**: Devrait générer "Paris." et potentiellement continuer avec des informations liées si on le laisse générer plus de tokens.
+        *   **`t5-small` (attendu)**: Devrait également générer "Paris." de manière concise, car il est entraîné sur des tâches de type question-réponse.
+
+    *   **Prompt 3 (Instruction simple)**: "Écris un poème sur la lune."
+        *   **`gpt2` (attendu)**: Pourrait générer quelques vers, dont la qualité poétique varierait. Exemple : "Astre pâle dans la nuit noire, / Tu veilles sur nos espoirs, / Silencieuse et lointaine, / Reine de la nuit sereine."
+        *   **`t5-small` (attendu, si le prompt est bien formulé pour une tâche de génération)**: Pourrait aussi tenter de générer un poème, bien que sa force réside plus dans la transformation de tâches structurées. La qualité pourrait être plus variable pour une tâche aussi ouverte sans fine-tuning spécifique.
+
+*   **Analyse de la qualité et de la cohérence des textes générés (Attendus) :**
+
+    *   **`gpt2` / `distilgpt2`**:
+        *   **Qualité**: Tendance à produire un texte grammaticalement correct et souvent plausible localement. La cohérence sur de longues séquences peut parfois se dégrader, avec des répétitions ou des dérives de sujet, surtout pour les versions plus petites comme `distilgpt2`.
+        *   **Cohérence**: Bonne cohérence à court et moyen terme. Pour des textes plus longs, un prompt bien formulé et des techniques de décodage (comme le beam search, top-k/top-p sampling) peuvent aider à maintenir la cohérence. Peut parfois générer des informations factuellement incorrectes (hallucinations) car il est optimisé pour la plausibilité linguistique plutôt que la véracité.
+
+    *   **`t5-small`**:
+        *   **Qualité**: Lorsqu'utilisé pour des tâches pour lesquelles il a été explicitement entraîné (via les préfixes), la qualité est généralement bonne et factuelle. Pour la génération de texte plus libre à partir d'un prompt, la qualité peut être plus hétérogène sans fine-tuning spécifique. Le texte est souvent grammaticalement correct.
+        *   **Cohérence**: Bonne cohérence pour les tâches structurées. Pour la génération libre, il peut être plus enclin à générer des phrases plus courtes ou à s'arrêter plus tôt que GPT-2 s'il n'est pas certain de la suite. Sa nature encodeur-décodeur le rend bon pour suivre les instructions implicites du prompt (s'il est formulé comme une tâche qu'il connaît).
+        *   **Spécificité**: `t5-small` est un modèle plus petit de la famille T5, donc ses capacités de génération seront moins impressionnantes que les versions plus grandes (T5-base, T5-large). Il est cependant plus gérable en termes de ressources.
+
+    **Note**: Ces analyses sont basées sur les caractéristiques générales des architectures et des modèles. Les résultats réels dépendront fortement des prompts exacts, des paramètres de génération (température, top-k, etc.), et d'un éventuel fine-tuning.
