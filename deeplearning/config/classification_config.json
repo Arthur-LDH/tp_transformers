@@ -1,0 +1,4 @@
+{
+    "model_name_or_path": "distilbert-base-uncased",
+    "return_all_scores": false
+}
