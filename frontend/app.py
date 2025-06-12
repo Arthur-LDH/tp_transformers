@@ -2,11 +2,11 @@ import gradio as gr
 import requests
 
 def classification(prompt):
-    response = requests.post("http://localhost:8000/classification", json={"text": prompt})
+    response = requests.post("http://localhost:8000/classify/", json={"text": prompt})
     return response.json()
 
-def generation(prompt):
-    response = requests.post("http://localhost:8000/generation", json={"text": prompt})
+def generation(prompt_text):
+    response = requests.post("http://localhost:8000/generate/", json={"prompt": prompt_text})
     return response.json()
 
 # Page d'accueil

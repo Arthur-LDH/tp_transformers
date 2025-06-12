@@ -26,6 +26,46 @@ Voici les principales technologies et outils envisagés pour ce projet :
     *   ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
     *   ![Visual Studio Code](https://img.shields.io/badge/VS%20Code-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white)
 
+## Lancement du Projet
+
+Cette section décrit les étapes pour configurer l'environnement et lancer les différents composants du projet.
+
+### 1. Prérequis
+
+*   Python 3.8+
+*   pip (généralement inclus avec Python)
+
+### 2. Installation des dépendances
+
+Clonez d'abord le dépôt si ce n'est pas déjà fait. Ensuite, ouvrez un terminal à la racine du projet et exécutez la commande suivante pour installer toutes les bibliothèques nécessaires listées dans `requirements.txt` :
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Lancement du Backend (API FastAPI)
+
+L'API FastAPI expose les modèles de deep learning. Pour la démarrer, exécutez la commande suivante depuis la racine du projet :
+
+```bash
+python -m uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+```
+*   `python -m uvicorn` : Exécute uvicorn en tant que module Python, ce qui est plus portable entre les environnements et les systèmes d\'exploitation.
+*   `--reload` : Permet au serveur de redémarrer automatiquement après des modifications du code. Utile en développement.
+*   `--host 0.0.0.0` : Rend l'API accessible depuis d'autres machines sur le réseau (et pas seulement en localhost).
+*   `--port 8000` : Spécifie le port d'écoute (par défaut pour FastAPI avec uvicorn).
+
+L'API sera alors accessible à l'adresse `http://localhost:8000` (ou `http://<votre-ip-locale>:8000`).
+
+### 4. Lancement du Frontend (Gradio)
+
+L'interface utilisateur Gradio permet d'interagir avec l'API. Pour la démarrer, exécutez la commande suivante depuis la racine du projet (en supposant que votre application Gradio se trouve dans `frontend/app.py`) :
+
+```bash
+python frontend/app.py
+```
+
+L'interface Gradio sera généralement accessible via une URL locale affichée dans le terminal (souvent `http://127.0.0.1:7860` ou similaire). Assurez-vous que le backend FastAPI est en cours d'exécution pour que le frontend puisse communiquer avec les modèles.
 
 ## Réponses aux Questions du TP
 
