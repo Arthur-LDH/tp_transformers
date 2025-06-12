@@ -3,4 +3,5 @@ transformers
 torch
 fastapi
 uvicorn[standard]
+gradio
 # Add other libraries as needed, e.g., datasets, scikit-learn, pandas, numpy
