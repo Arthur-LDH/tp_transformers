@@ -16,8 +16,8 @@ ENV/
 *.swo
 
 # Ignore data and model files (if large or not versioned)
-# deeplearning/data/*
-# deeplearning/models/*
+deeplearning/data/*
+deeplearning/models/*
 
 # Ignore build artifacts
 build/

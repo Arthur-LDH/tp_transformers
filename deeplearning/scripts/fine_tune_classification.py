@@ -91,13 +91,13 @@ def main():
         per_device_train_batch_size=PER_DEVICE_TRAIN_BATCH_SIZE,
         per_device_eval_batch_size=PER_DEVICE_EVAL_BATCH_SIZE,
         learning_rate=LEARNING_RATE,
-        evaluation_strategy="epoch", # Evaluate at the end of each epoch
+        eval_strategy="epoch", # Evaluate at the end of each epoch
         save_strategy="epoch",       # Save model at the end of each epoch
         logging_dir=LOGGING_DIR,
         logging_steps=100,           # Log every 100 steps
         load_best_model_at_end=True, # Load the best model found during training
         metric_for_best_model="f1",  # Use f1 score to determine the best model
-        report_to="tensorboard",     # Can also use "wandb" if configured
+        # report_to="tensorboard",     # Temporarily comment out if issues persist
         fp16=torch.cuda.is_available(), # Use mixed precision if CUDA is available
         push_to_hub=False # Do not push to Hugging Face Hub
     )
